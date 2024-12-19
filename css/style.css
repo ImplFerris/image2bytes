@@ -5,13 +5,18 @@
 
 body{
   font-family: arial;
+  background-color: #333333;
+  color: #ffffff;
+  
 }
 
 .wrapper {
   display: flex;
   flex-direction: column;
   margin: auto;
-  width: 900px;
+  width: 980px;
+  padding: 10px;
+  border: 1px solid #666;
 }
 
 .section {
@@ -19,7 +24,7 @@ body{
 }
 
 .bottom-divider {
-  border-bottom: 2px solid #000000;
+  border-bottom: 2px solid #afafaf;
   padding-bottom: 20px;
 }
 
@@ -91,13 +96,13 @@ p {
 }
 
 .nested-table .table-cell {
-  color: #666;
+  color: #999;
   font-size: .9em;
   width: 200px;
 }
 
 #format-caption-container div {
-  color: #505050;
+  color: #9e9999;
   display: none;
   font-size: .9em;
   line-height: 1.4em;
@@ -120,7 +125,7 @@ p {
 }
 
 .note {
-  color: #666666;
+  color: #CCCCCC;
   font-size: .9em;
   line-height: 1.4em;
   margin: 3px 0;
@@ -134,7 +139,7 @@ p {
 
 button,
 input[type="file"] {
-  background: #00CB99;
+  background: #B7410E; /* Color code name is Rust :P */
   border-radius: 3px;
   border: none;
   color: #fff;
@@ -159,7 +164,7 @@ input[type="file"] {
 }
 
 .file-info {
-  color: #505050;
+  color: #9e9999;
   font-size: .7em;
   margin-left: 20px;
   max-width: 300px;
@@ -184,7 +189,7 @@ input[type="file"] {
 }
 
 #images-canvas-container canvas {
-  border: 3px solid #88DAC5;
+  border: 1px solid #ccc;
   margin: 10px 15px;
 }
 
@@ -212,15 +217,37 @@ input[type="file"] {
 h1{
   padding: 10px;
   color: white;
-  background-color: #00cb99;
 }
 
-/*.sp-block {
-  border: 1px solid rgb(65, 65, 65);
-  padding: .5rem;
-  border-radius: 1rem;
+textarea{
+  background-color: #333;
+  color: #f0f0f0;
 }
-.sp-btn {
-  display: block;
-  margin-top: .5rem;
-}*/
+
+.title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px;
+  background-color: #B7410E;
+}
+
+.main-title {
+  margin: 0;
+}
+
+.left-title-bar {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.left-title-bar a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;  
+}
+ 
+
+.left-title-bar a:hover {
+  text-decoration: underline;
+}

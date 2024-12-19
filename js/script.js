@@ -263,7 +263,7 @@ function Images() {
 const images = new Images();
 // Filetypes accepted by the file picker
 // const fileTypes = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'svg'];
-// Variable name, when "arduino code" is required
+// Variable name, when "rust code" is required
 const identifier = 'myBitmap';
 
 // Invert the colors of the canvas
@@ -518,17 +518,6 @@ function hexToBinary(s) {
   return { valid: true, result: ret };
 }
 
-// get the type (in arduino code) of the output image
-// this is a bit of a hack, it's better to make this a property of the conversion function (should probably turn it into objects)
-function getImageType() {
-  if (settings.conversionFunction === ConversionFunctions.horizontal565) {
-    return 'uint16_t';
-  } if (settings.conversionFunction === ConversionFunctions.horizontal888) {
-    return 'unsigned long';
-  }
-  return 'unsigned char';
-}
-
 // Use the horizontally oriented list to draw the image
 function listToImageHorizontal(list, canvas) {
   const ctx = canvas.getContext('2d');
@@ -669,7 +658,7 @@ function handleTextInput(drawMode) {
 
   let input = document.getElementById('byte-input').value;
 
-  // Remove Arduino code
+  // Remove rust code
   input = input.replace(/const\s+(unsigned\s+char|uint8_t)\s+[a-zA-Z0-9]+\s*\[\]\s*(PROGMEM\s*)?=\s*/g, '');
   input = input.replace(/\};|\{/g, '');
 
@@ -873,6 +862,7 @@ function handleImageSelection(evt) {
   }
 }
 
+
 function imageToString(image) {
   // extract raw image data
   const { ctx } = image;
@@ -883,7 +873,7 @@ function imageToString(image) {
   return settings.conversionFunction(data, canvas.width);
 }
 
-// Get the custom arduino output variable name, if any
+// Get the custom rust output variable name, if any
 function getIdentifier() {
   const vn = document.getElementById('identifier');
   return vn && vn.value.length ? vn.value : identifier;
@@ -894,115 +884,40 @@ function getIdentifier() {
 function generateOutputString() {
   let outputString = '';
   let code = '';
+  let usageString = '';
 
   switch (settings.outputFormat) {
-    case 'arduino': {
+    case 'rust': {
       const varQuickArray = [];
       let bytesUsed = 0;
       // --
       images.each((image) => {
-        code = imageToString(image);
-
+        let code = imageToString(image);
+        console.log(code);
+    
         // Trim whitespace from end and remove trailing comma
         code = code.replace(/,\s*$/, '');
-
+    
         code = `\t${code.split('\n').join('\n\t')}\n`;
-        // const variableCount = images.length() > 1 ? count++ : '';
-        const comment = `// '${image.glyph}', ${image.canvas.width}x${image.canvas.height}px\n`;
+    
+        const comment = `// '${image.glyph}', WxH Pixel = ${image.canvas.width} x ${image.canvas.height} px\n`;
         bytesUsed += code.split('\n').length * 16; // 16 bytes per line.
+       
+        // Calculate the fixed array size based on byte data
+        const arraySize = code.split(',').length;
 
-        const varname = getIdentifier() + image.glyph.replace(/[^a-zA-Z0-9]/g, '_');
+        const varname = getIdentifier() + image.glyph.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
         varQuickArray.push(varname);
-        code = `${comment}const ${getImageType()} ${varname} [] PROGMEM = {\n${code}};\n`;
+        code = `${comment}const ${varname}: [u8; ${arraySize}] = [\n${code}];\n`; 
         outputString += code;
-      });
 
-      varQuickArray.sort();
-      outputString += `\n// Array of all bitmaps for convenience. (Total bytes used to store images in PROGMEM = ${bytesUsed})\n`;
-      outputString += `const int ${getIdentifier()}allArray_LEN = ${varQuickArray.length};\n`;
-      outputString += `const ${getImageType()}* ${getIdentifier()}allArray[${varQuickArray.length}] = {\n\t${varQuickArray.join(',\n\t')}\n};\n`;
+        const imVarName = `im_${image.glyph.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        const imageWidth = image.canvas.width;
+        usageString = `let ${imVarName} = ImageRaw::<BinaryColor>::new(&${varname}, ${imageWidth});\n`;
+      });
       break;
     }
-
-    case 'arduino_single': {
-      let comment = '';
-      images.each((image) => {
-        code = imageToString(image);
-        code = `\t${code.split('\n').join('\n\t')}\n`;
-        comment = `\t// '${image.glyph}, ${image.canvas.width}x${image.canvas.height}px\n`;
-        outputString += comment + code;
-      });
-
-      outputString = outputString.replace(/,\s*$/, '');
-
-      outputString = `const ${getImageType()} ${
-        +getIdentifier()
-      } [] PROGMEM = {`
-            + `\n${outputString}\n};`;
-      break;
-    }
-
-    case 'adafruit_gfx': { // bitmap
-      let comment = '';
-      let useGlyphs = 0;
-      images.each((image) => {
-        code = imageToString(image);
-        code = `\t${code.split('\n').join('\n\t')}\n`;
-        comment = `\t// '${image.glyph}, ${image.canvas.width}x${image.canvas.height}px\n`;
-        outputString += comment + code;
-        if (image.glyph.length === 1) {
-          useGlyphs++;
-        }
-      });
-
-      outputString = outputString.replace(/,\s*$/, '');
-      outputString = `const unsigned char ${
-        getIdentifier()
-      }Bitmap`
-            + ' [] PROGMEM = {'
-            + `\n${outputString}\n};\n\n`
-            + `const GFXbitmapGlyph ${
-              getIdentifier()
-            }Glyphs [] PROGMEM = {\n`;
-
-      let firstAschiiChar = document.getElementById('first-ascii-char').value;
-      const xAdvance = parseInt(document.getElementById('x-advance').value);
-      let offset = 0;
-      code = '';
-
-      // GFXbitmapGlyph
-      images.each((image) => {
-        code += `\t{ ${
-          offset}, ${
-          image.canvas.width}, ${
-          image.canvas.height}, ${
-          xAdvance}, `
-              + `'${images.length() === useGlyphs
-                ? image.glyph
-                : String.fromCharCode(firstAschiiChar++)}'`
-              + ' }';
-        if (image !== images.last()) {
-          code += ',';
-        }
-        code += `// '${image.glyph}'\n`;
-        offset += image.canvas.width;
-      });
-      code += '};\n';
-      outputString += code;
-
-      // GFXbitmapFont
-      outputString += `\nconst GFXbitmapFont ${
-        getIdentifier()
-      }Font PROGMEM = {\n`
-            + `\t(uint8_t *)${
-              getIdentifier()}Bitmap,\n`
-            + `\t(GFXbitmapGlyph *)${
-              getIdentifier()
-            }Glyphs,\n`
-            + `\t${images.length()
-            }\n};\n`;
-      break;
-    }
+ 
     default: { // plain
       images.each((image) => {
         code = imageToString(image);
@@ -1022,6 +937,7 @@ function generateOutputString() {
   }
 
   document.getElementById('code-output').value = outputString;
+  document.getElementById('usage-output').value = usageString;
   document.getElementById('copy-button').disabled = false;
 }
 
@@ -1062,12 +978,12 @@ function updateDrawMode(elm) {
   }
 }
 
-// Updates Arduino code check-box
+// Updates rust code check-box
 // eslint-disable-next-line no-unused-vars
 function updateOutputFormat(elm) {
   let caption = document.getElementById('format-caption-container');
-  const adafruitGfx = document.getElementById('adafruit-gfx-settings');
-  const arduino = document.getElementById('arduino-identifier');
+  // const adafruitGfx = document.getElementById('adafruit-gfx-settings');
+  // const rust = document.getElementById('rust-identifier');
   const removeZeroesCommasContainer = document.getElementById('remove-zeroes-commas-container');
   document.getElementById('code-output').value = '';
 
@@ -1078,20 +994,15 @@ function updateOutputFormat(elm) {
   if (caption) caption.style.display = 'block';
 
   if (elm.value !== 'plain') {
-    arduino.style.display = 'block';
+    // rust.style.display = 'block';
     removeZeroesCommasContainer.style.display = 'none';
     settings.removeZeroesCommas = false;
     document.getElementById('removeZeroesCommas').checked = false;
   } else {
-    arduino.style.display = 'none';
+    // rust.style.display = 'none';
     removeZeroesCommasContainer.style.display = 'table-row';
   }
-  if (elm.value === 'adafruit_gfx') {
-    adafruitGfx.style.display = 'block';
-  } else {
-    adafruitGfx.style.display = 'none';
-  }
-
+  
   settings.outputFormat = elm.value;
 }
 
@@ -1114,6 +1025,6 @@ window.onload = () => {
   const fileInput = document.getElementById('file-input');
   fileInput.addEventListener('click', () => { this.value = null; }, false);
   fileInput.addEventListener('change', handleImageSelection, false);
-  document.getElementById('outputFormat').value = 'arduino';
+  document.getElementById('outputFormat').value = 'rust';
   document.getElementById('outputFormat').onchange();
 };

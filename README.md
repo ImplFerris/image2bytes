@@ -1,30 +1,24 @@
-## image2cpp
+## Image2Bytes
 
-An online version of this tool is live at [http://javl.github.io/image2cpp/](http://javl.github.io/image2cpp/)
+Image2Bytes is a fork of [image2cpp](https://github.com/javl/image2cpp) developed by the [Jasper van Loenen](https://github.com/javl). The original codebase generates arudino and cpp code. This repo is meant to be used mainly for rust version of it. 
 
+A simple tool for converting images into byte arrays (or byte arrays back into images), designed for use with monochrome displays like OLEDs. You can also input a byte array to reconstruct the image, which can be useful for debugging or working with images when only the byte array form is available.
 
-image2cpp is a simple tool to change images into byte arrays (or your array back into an image) for use with (monochrome) displays suchs as OLEDs, like those from Adafruit or Sparkfun. While searching for a way to generate these arrays, I mostly found links to a piece of Windows software. Both the flakey results and the hassle of having to boot a virtual machine just to convert an image lead to me writing this pure html + javascript solution.
-
-Alternatively you can also enter a byte array as input to turn it back into an image. This might be useful for debugging, or when you want to write the byte array yourself. I don't know.
-
-Did you find this tool useful? Feel free to support my open source software:
-
-[![GitHub Sponsor](https://img.shields.io/github/sponsors/javl?label=Sponsor&logo=GitHub)](https://github.com/sponsors/javl)
-
-[![BMC](https://www.buymeacoffee.com/assets/img/custom_images/white_img.png)](https://www.buymeacoffee.com/javl)
-
+Did you find this tool useful? Please support the original repository:
+[https://github.com/javl/image2cpp](https://github.com/javl/image2cpp)
 
 ### Running the tool
 You don't need any special dependencies / internet connection; all the necessary parts sit in a single .html file. So just open this index.html page in a (recent) browser to run the tool.
-Or you can use the online version at http://javl.github.io/image2cpp/
 
-### Example Arduino code
-You can find a simple Arduino example sketch [over here](https://github.com/javl/image2cpp/blob/master/oled_example/oled_example.ino) in the repository.
+Or you can use the online version at https://implferris.github.io/image2bytes
+
+### Example Rust code
+//TODO: Link to the tutorial
 
 ### Screen types
-I wrote the code with my 128x64 pixel monochrome OLED display in mind, but it should work with most similar displays. You might need to change some export settings; those are explained in the tool.
+It was created with a 128x64 pixel monochrome OLED display in mind, but it is designed to work with most similar displays. Some export settings may need adjustment depending on your specific display, and these are explained within the tool.
 
-### Credit
+### Credits to Original Repo Authors
 Initial code by [javl](https://github.com/javl) with aditional code by (in alphabetical order):
 * [akumpf](https://github.com/akumpf)
 * [Daniyal Warraich](https://github.com/daniyalw)
@@ -41,4 +35,7 @@ Initial code by [javl](https://github.com/javl) with aditional code by (in alpha
 The example sketch is based on code by [Adafruit](https://github.com/adafruit). Dithering code from [stellar-L3N-etag](https://github.com/reece15/stellar-L3N-etag).
 
 ### License
-image2cpp is released under GPL v3. This means you can use the project in any way you want (use, adapt, distribute, etc.) as long as you share any changes and link back to this repo. See [LICENSE.md](https://github.com/javl/image2cpp/blob/master/LICENSE.md) for more info.
+
+`image2bytes` is released under GPL v3. This means you can use the project in any way you want (use, adapt, distribute, etc.) as long as you share any changes and link back to this repository.
+
+This project is a derivative of [`image2cpp`](https://github.com/javl/image2cpp), originally created by [javl](https://github.com/javl) and released under GPL v3. Significant changes and adaptations have been made to create `image2bytes`. For more information, refer to the [LICENSE.md](LICENSE.md) file.

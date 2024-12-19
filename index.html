@@ -1,16 +1,8 @@
-<!--
-  "image2cpp"
-  Original utility by:
-  https://jaspervanloenen.com
-
-  This is the 2nd revision of the modified version by:
-  https://wiredolphin.net
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>image2cpp</title>
+  <title>Image2Bytes</title>
   <script src="./js/dithering.js" defer></script>
   <script src="./js/script.js" defer></script>
   <link rel="stylesheet" href="./css/style.css">
@@ -18,19 +10,12 @@
 <body>
   <div class="wrapper">
     <section class="section">
-      <h1>image2cpp</h1>
-      <p><strong>image2cpp</strong> is a simple tool to change images into byte arrays (or arrays back into an images) for use with (monochrome) displays such as OLEDs on your Arduino or Raspberry Pi.<br>
-        It was originally made to work with the Adafruit OLED library (for which your can find an example sketch for Arduino <a href="https://github.com/javl/image2cpp/blob/master/oled_example/oled_example.ino" target="_blank">here</a>) but
-        has been expanded by the community to be useful in all kind of (embedded) projects.</p>
-      <p>More info (and credits) can be found in the <a href="https://github.com/javl/image2cpp" target="_blank">Github repository</a>. This is also where you can report any <a href="https://github.com/javl/image2cpp/issues" target="_blank">issues</a> you might come across.</p>
-      <p class="sp-block">
-        Did you find this tool useful? Feel free to support my open source software on Github<br />
-        <a href="https://github.com/sponsors/javl" target="_blank">
-          <img src="https://img.shields.io/github/sponsors/javl?label=Sponsor&logo=GitHub" alt="GitHub Sponsor">
-        </a>
-
-      </p>
-    </section>
+      <div class="title-bar">
+        <h1 class="main-title">Image2Bytes</h1>
+        <span class="left-title-bar"><a href="https://github.com/implferris/image2bytes">Github</a></span>
+      </div>
+      <p><strong>image2bytes</strong> is a simple tool to change images into byte arrays (or arrays back into an images) for use with (monochrome) displays such as OLEDs on your Raspberry Pi Pico or  ESP32.<br>
+        </section>
 
     <section class="section bottom-divider">
       <section class="sub-section">
@@ -74,6 +59,19 @@
           </div>
 
           <div class="table-row">
+            <div class="table-cell"><label for="scale">Scaling:</label></div>
+            <div class="table-cell">
+              <select id="scale" name="scale" onchange="updateInteger('scale')">
+                <option value="1">original size</option>
+                <option value="2">scale to fit, keeping proportions</option>
+                <option value="3">stretch to fill canvas</option>
+                <option value="4">stretch to fill canvas horizontally</option>
+                <option value="5">stretch to fill canvas vertically</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-row">
             <div class="table-cell"><label>Background color:</label></div>
             <div class="table-cell">
               <input id="backgroundColorWhite" type="radio" name="backgroundColor" value="white" checked="checked" onchange="updateRadio('backgroundColor')"/>
@@ -113,18 +111,6 @@
             </div>
           </div>
 
-          <div class="table-row">
-            <div class="table-cell"><label for="scale">Scaling:</label></div>
-            <div class="table-cell">
-              <select id="scale" name="scale" onchange="updateInteger('scale')">
-                <option value="1">original size</option>
-                <option value="2">scale to fit, keeping proportions</option>
-                <option value="3">stretch to fill canvas</option>
-                <option value="4">stretch to fill canvas horizontally</option>
-                <option value="5">stretch to fill canvas vertically</option>
-              </select>
-            </div>
-          </div>
 
           <div class="table-row">
             <div class="table-cell"><label>Center image:</label></div>
@@ -186,28 +172,15 @@
             <div class="table-cell"><label for="outputFormat">Code output format</label></div>
             <div class="table-cell">
               <select id="outputFormat" name="outputFormat" onchange="updateOutputFormat(this)">
-                <option value="plain">Plain bytes</option>
-                <option value="arduino">Arduino code</option>
-                <option value="arduino_single">Arduino code, single bitmap</option>
-                <option value="adafruit_gfx">Adafruit GFXbitmapFont</option>
+                <option value="plain" selected="selected">Plain bytes</option>
+                <option value="rust">Rust code</option>
               </select>
               <div id="format-caption-container">
-                <div data-caption="arduino">
-                  Adds some extra Arduino code around the output for easy copy-paste into
-                  <a href="https://github.com/javl/image2cpp/blob/master/oled_example/oled_example.ino" target="_blank">this example</a>.
-                  If multiple images are loaded, generates a byte array for each and appends a counter to the identifier.
-                </div>
-                <div data-caption="arduino_single">
-                  Adds some extra Arduino code around the output for easy copy-paste.
-                  If multiple images are loaded, generates a single byte array.
-                </div>
-                <div data-caption="adafruit_gfx">
-                  Creates a <code>GFXbitmapFont</code> formatted ouput. Used by a modified version of the Adafruit GFX library.
-                  GitHub project and example <a href="https://github.com/wiredolphin/Adafruit-GFX-Library/tree/bitmap-font" target="_blank">here</a>.
-                  <br />
-                  <i>First ASCII character</i> value is used only if a glyph identifier of length equal to 1 is not provided for each image. The value itself will be incremented by 1 for each glyph.
-                </div>
-              </div>
+                <div data-caption="rust">
+                  <!-- Adds some extra rust code around the output for easy copy-paste into
+                  <a href="https://github.com/javl/image2bytes/blob/master/oled_example/oled_example.ino" target="_blank">this example</a>.
+                  If multiple images are loaded, generates a byte array for each and appends a counter to the identifier. -->
+                </div>              </div>
               <div id="extra-settings-container">
                 <div id="adafruit-gfx-settings" class="table nested-table">
                   <div class="table-row">
@@ -223,11 +196,11 @@
                     </div>
                   </div>
                 </div>
-                <div id="arduino-identifier" class="table nested-table">
+                <div id="rust-identifier" class="table nested-table">
                   <div class="table-row">
                     <div class="table-cell"><label>Identifier/Prefix:</label></div>
                     <div class="table-cell">
-                      <input id="identifier" class="text-input" type="text" name="identifier" onchange="" value="epd_bitmap_"/>
+                      <input id="identifier" class="text-input" type="text" name="identifier" onchange="" value="SPRITE_"/>
                     </div>
                   </div>
                 </div>
@@ -256,7 +229,7 @@
 
             </div>
           </div>
-
+<!-- 
           <div class="table-row">
             <div class="table-cell"><label for="bitswap">Swap bits in byte:</label></div>
             <div class="table-cell">
@@ -270,7 +243,7 @@
             <div class="table-cell">
               <i class="note">Useful when working with the u8g2 library.</i>
             </div>
-          </div>
+          </div> -->
 
 
           <div class="table-row" id="remove-zeroes-commas-container">
@@ -289,6 +262,9 @@
         <button type="button" id = "copy-button" onclick="copyOutput()">Copy Output</button>
         <button type="button" id = "download-button" onclick="downloadBinFile()">Download as binary file (.bin)</button>
         <textarea id="code-output" class="code-output"></textarea>
+        <br/><br/>
+        <h3>Usage with Embedded Graphics:</h3>
+        <textarea id="usage-output" class="code-output"></textarea>
       </section>
     </section>
   </div>
