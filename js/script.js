@@ -573,6 +573,71 @@ function listToImageHorizontal(list, canvas) {
   const img = new Image();
   img.src = canvas.toDataURL('image/png');
   images.first().img = img;
+  images.first().ctx = ctx;
+
+  //TODO: make the function to generic for all image type inputs
+  const imageEntry = document.createElement('li');
+  imageEntry.setAttribute('data-img', "data");
+  const w = document.createElement('input');
+  w.type = 'number';
+  w.name = 'width';
+  w.id = 'screenWidth';
+  w.min = 0;
+  w.className = 'size-input';
+  w.value = img.width;
+  settings.screenWidth = img.width;
+  w.oninput = () => {
+    canvas.width = this.value;
+    updateAllImages();
+    updateInteger('screenWidth');
+  };
+
+  const h = document.createElement('input');
+  h.type = 'number';
+  h.name = 'height';
+  h.id = 'screenHeight';
+  h.min = 0;
+  h.className = 'size-input';
+  h.value = img.height;
+  settings.screenHeight = img.height;
+  h.oninput = () => {
+    canvas.height = this.value;
+    updateAllImages();
+    updateInteger('screenHeight');
+  };
+
+  const gil = document.createElement('span');
+  gil.innerHTML = 'glyph';
+  gil.className = 'file-info';
+
+  const gi = document.createElement('input');
+  gi.type = 'text';
+  gi.name = 'glyph';
+  gi.className = 'glyph-input';
+  gi.onchange = () => {
+    const image = images.get(img);
+    image.glyph = gi.value;
+  };
+
+  const fn = document.createElement('span');
+  fn.className = 'file-info';
+  fn.innerHTML = `(Resolution: ${img.width} x ${img.height})`;
+  fn.innerHTML += '<br />';
+
+  const rb = document.createElement('button');
+  rb.className = 'remove-button';
+  rb.innerHTML = 'remove';
+  const imageSizeSettings = document.getElementById('image-size-settings');
+  imageEntry.appendChild(fn);
+  imageEntry.appendChild(w);
+  imageEntry.appendChild(document.createTextNode(' x '));
+  imageEntry.appendChild(h);
+  imageEntry.appendChild(gil);
+  imageEntry.appendChild(gi);
+  imageEntry.appendChild(rb);
+
+  imageSizeSettings.appendChild(imageEntry);
+
 }
 
 // Quick and effective way to draw single pixels onto the canvas
@@ -635,6 +700,71 @@ function listToImageVertical(list, canvas) {
   const img = new Image();
   img.src = canvas.toDataURL('image/png');
   images.first().img = img;
+  images.first().ctx = ctx;
+
+
+  //TODO: make the function to generic for all image type inputs
+  const imageEntry = document.createElement('li');
+  imageEntry.setAttribute('data-img', "data");
+  const w = document.createElement('input');
+  w.type = 'number';
+  w.name = 'width';
+  w.id = 'screenWidth';
+  w.min = 0;
+  w.className = 'size-input';
+  w.value = img.width;
+  settings.screenWidth = img.width;
+  w.oninput = () => {
+    canvas.width = this.value;
+    updateAllImages();
+    updateInteger('screenWidth');
+  };
+
+  const h = document.createElement('input');
+  h.type = 'number';
+  h.name = 'height';
+  h.id = 'screenHeight';
+  h.min = 0;
+  h.className = 'size-input';
+  h.value = img.height;
+  settings.screenHeight = img.height;
+  h.oninput = () => {
+    canvas.height = this.value;
+    updateAllImages();
+    updateInteger('screenHeight');
+  };
+
+  const gil = document.createElement('span');
+  gil.innerHTML = 'glyph';
+  gil.className = 'file-info';
+
+  const gi = document.createElement('input');
+  gi.type = 'text';
+  gi.name = 'glyph';
+  gi.className = 'glyph-input';
+  gi.onchange = () => {
+    const image = images.get(img);
+    image.glyph = gi.value;
+  };
+
+  const fn = document.createElement('span');
+  fn.className = 'file-info';
+  fn.innerHTML = `(Resolution: ${img.width} x ${img.height})`;
+  fn.innerHTML += '<br />';
+
+  const rb = document.createElement('button');
+  rb.className = 'remove-button';
+  rb.innerHTML = 'remove';
+  const imageSizeSettings = document.getElementById('image-size-settings');
+  imageEntry.appendChild(fn);
+  imageEntry.appendChild(w);
+  imageEntry.appendChild(document.createTextNode(' x '));
+  imageEntry.appendChild(h);
+  imageEntry.appendChild(gil);
+  imageEntry.appendChild(gi);
+  imageEntry.appendChild(rb);
+
+  imageSizeSettings.appendChild(imageEntry);
 }
 
 // Handle inserting an image by pasting code
@@ -864,6 +994,7 @@ function handleImageSelection(evt) {
 
 
 function imageToString(image) {
+
   // extract raw image data
   const { ctx } = image;
   const { canvas } = image;
@@ -893,25 +1024,27 @@ function generateOutputString() {
       // --
       images.each((image) => {
         let code = imageToString(image);
-        console.log(code);
+        // console.log(code);
+        const glyphName = image.glyph || 'data'; // Fallback to 'data' if glyph is undefined
+
     
         // Trim whitespace from end and remove trailing comma
         code = code.replace(/,\s*$/, '');
     
         code = `\t${code.split('\n').join('\n\t')}\n`;
     
-        const comment = `// '${image.glyph}', WxH Pixel = ${image.canvas.width} x ${image.canvas.height} px\n`;
+        const comment = `// '${glyphName}', WxH Pixel = ${image.canvas.width} x ${image.canvas.height} px\n`;
         bytesUsed += code.split('\n').length * 16; // 16 bytes per line.
        
         // Calculate the fixed array size based on byte data
         const arraySize = code.split(',').length;
 
-        const varname = getIdentifier() + image.glyph.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+        const varname = getIdentifier() + glyphName.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
         varQuickArray.push(varname);
         code = `${comment}const ${varname}: [u8; ${arraySize}] = [\n${code}];\n`; 
         outputString += code;
 
-        const imVarName = `im_${image.glyph.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        const imVarName = `im_${glyphName.replace(/[^a-zA-Z0-9]/g, '_')}`;
         const imageWidth = image.canvas.width;
         usageString = `let ${imVarName} = ImageRaw::<BinaryColor>::new(&${varname}, ${imageWidth});\n`;
       });
